@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <meta
+      name="description"
+      content="Web site created using create-react-app"
+    />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>React App</title>
+  </head>
+  <body>
+    <button id="subscribeButton">hello</button>
+    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <div id="root"></div>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/service-worker.js")
+            .then(function (registration) {
+              swRegistration = registration; // swRegistration 변수에 등록 정보를 할당
+              console.log("Service Worker 등록 성공:", registration.scope);
+            })
+            .catch((error) => {
+              console.error("Service Worker 등록 실패:", error);
+            });
+        });
+      }
+      document
+        .getElementById("subscribeButton")
+        .addEventListener("click", async () => {
+          const subscription = await swRegistration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey:
+              "BLnQms9ktVqh96CHi-dq8oy54tTRrOeFG6_I5Omc4kUUsH23Vk2rYbmHKMSk2bix5bcChMk1f3Zg6E2S3Sml_Ro", // 서버의 공개 VAPID 키
+          });
+          fetch("http://localhost:3001/subscribe", {
+            method: "POST",
+            body: JSON.stringify(subscription),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          })
+            .then((response) => {
+              if (response.status === 201) {
+                console.log("구독 정보 전송 성공");
+              } else {
+                console.error("구독 정보 전송 실패");
+              }
+            })
+            .catch((error) => {
+              console.error("구독 정보 전송 오류:", error);
+            });
+        });
+    </script>
+  </body>
+</html>
